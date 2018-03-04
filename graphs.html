@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -151,14 +152,14 @@
 
   <div class="w3-bar w3-card-4 w3-light-grey">
     <span href="#" class="w3-bar-item">Start Date
-    <form id="startdate" action="/action_page.php">
-      <input type="date" name="startdate">
+    <form action="/action_page.php">
+      <input id="startdate" type="date" name="startdate" max="2018-03-01">
     </form>
     </span>
-    <button onclick="myFunction3()" class="w3-bar-item w3-button w3-border w3-round-large w3-hover-red" >Zoom</button>
+    <button id="zoombutton" class="w3-bar-item w3-button w3-border w3-round-large w3-hover-red" >Zoom</button>
     <span href="#" class="w3-bar-item">End Date
-    <form id="enddate" action="/action_page.php">
-      <input type="date" name="enddate">
+    <form action="/action_page.php">
+      <input id="enddate" type="date" name="enddate" max="2018-03-01">
     </form>
     </span>
     <!--<div class="w3-dropdown-hover">
@@ -176,7 +177,6 @@
       </div>
     </div>
   </div>
-</div>
 </div>
 </body>
 
@@ -208,7 +208,7 @@
 </div>
 -->
 
-<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto;    margin-top: 30px"></div>
+<div id="container" style="min-width: 310px; height: 450px; margin: 0 auto;    margin-top: 30px"></div>
 
   
 
@@ -218,6 +218,20 @@
 
 <script type="text/javascript">//<![CDATA[
 
+var today = new Date();
+var dd = today.getDate();
+var mm = today.getMonth()+1; //January is 0!
+var yyyy = today.getFullYear();
+ if(dd<10){
+        dd='0'+dd
+    } 
+    if(mm<10){
+        mm='0'+mm
+    } 
+
+today = yyyy+'-'+mm+'-'+dd;
+document.getElementById("startdate").setAttribute("max",today);
+document.getElementById("enddate").setAttribute("max", today);
 $.getJSON(
   'https://cdn.rawgit.com/highcharts/highcharts/v6.0.5/samples/data/usdeur.json',
   function(data) {
@@ -226,13 +240,13 @@ $.getJSON(
       chart: {
         zoomType: 'x'
       },
-      title: {
+      /*title: {
         text: 'USD to EUR exchange rate over time'
       },
       subtitle: {
         text: document.ontouchstart === undefined ?
           'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
-      },
+      },*/
       xAxis: {
         type: 'datetime',
         dateTimeLabelFormats : {
@@ -246,6 +260,10 @@ $.getJSON(
           text: 'Temperature'
         }
       },
+      rangeSelector: {
+        enabled: true
+    },
+
       legend: {
         enabled: true
       },
@@ -297,13 +315,40 @@ $.getJSON(
         data: [[Date.UTC(2018,3,1,0,0),15],[Date.UTC(2018,3,1,0,5),15.5],[Date.UTC(2018,3,1,0,10),15],[Date.UTC(2018,3,1,0,15),14.5],[Date.UTC(2018,3,1,0,20),14],[Date.UTC(2018,3,1,0,25),14],[Date.UTC(2018,3,1,0,30),14],[Date.UTC(2018,3,1,0,35),14.5],[Date.UTC(2018,3,1,0,40),15],[Date.UTC(2018,3,1,0,45),14.5]]
     }],
     });
+    // the button action
+    $('#zoombutton').click(function () {
+        var chart = $('#container').highcharts();									
+        var startdate = 				document.getElementById("startdate").value;
+        var inputStart=Date.parse(startdate);
+        var enddate= document.getElementById("enddate").value;
+        var inputEnd=Date.parse(enddate);
+        if(inputStart>inputEnd){
+        	alert("Please make sure the start date doesn't exceed the end date!");
+        }
+        else{
+        	if(startdate.length>9&&enddate.length>9){
+          	var todayDate=Date.parse(today);
+          	if(inputEnd>todayDate){
+          		enddate=today;
+            	document.getElementById("enddate").value=yyyy+"-"+mm+"-"+dd;
+          	}
+        		var start=startdate.split('-');
+        		var end=enddate.split('-');
+  chart.xAxis[0].setExtremes(Date.UTC(start[0],start[1],start[2],0,0),Date.UTC(end[0],end[1],end[2],23,59));
+  					chart.showResetZoom();
+  				}
+  				else {
+  					alert("Choose a start and an end date!");
+  				}
+        }
+    });
   }
 );
 /* When the user clicks on the button, 
 toggle between hiding and showing the dropdown content */
 
 function myFunction3(){
-chart.axis.zoom(Date.UTC(2018,3,1,0,10),Date.UTC(2018,3,1,0,45));
+chart.xAxis[0].setExtremes(Date.UTC(2018,3,1,0,05),Date.UTC(2018,3,1,0,45));
 }
 // Close the dropdown menu if the user clicks outside of it
 window.onclick = function(event) {
@@ -319,6 +364,7 @@ window.onclick = function(event) {
     }
   }
 }
+
 
 //]]> 
 
@@ -337,3 +383,4 @@ window.onclick = function(event) {
 </body>
 
 </html>
+
